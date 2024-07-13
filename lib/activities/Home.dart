@@ -1,10 +1,11 @@
 import 'dart:io';
-import 'dart:nativewrappers/_internal/vm/lib/typed_data_patch.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:ui' as ui;
@@ -23,21 +24,50 @@ class _Home extends State<Home>{
   String footer = '';
   var _headSize = 16.0;
   var _footSize = 16.0;
-  GlobalKey globalKey = new GlobalKey();
   TextEditingController _headerCont = TextEditingController();
   TextEditingController _footerCont = TextEditingController();
 
+   var _imageFile;
+   GlobalKey _globalKey = GlobalKey();
+
   Future imagePic()async{
-    var img = await picker.pickImage(source: ImageSource.gallery);
-    if(img != null){
-      setState((){
-      _imagePick = File(img.path);
-      });
+    try{
+      var img = await picker.pickImage(source: ImageSource.gallery);
+      if(img != null){
+        setState((){
+          _imagePick = File(img.path);
+        });
+      }
+    }catch(err){
+      print('Picking image err: $err');
     }
   }
 
-  void _takeScreen()async{
-
+  Future _takeScreen()async{
+      try{
+        RenderRepaintBoundary boundary =
+        _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        ui.Image image = await boundary.toImage();
+        ByteData? byteData =
+        await (image.toByteData(format: ui.ImageByteFormat.png));
+        if (byteData != null) {
+          final result =
+          await ImageGallerySaver.saveImage(byteData.buffer.asUint8List());
+          print(result);
+        }
+        _headerCont.clear();
+        _footerCont.clear();
+        Fluttertoast.showToast(
+            msg: 'Meme is saved!',
+            toastLength: Toast.LENGTH_LONG,
+            fontSize: 20,
+            textColor: Colors.white,
+            backgroundColor: Colors.blue,
+            gravity: ToastGravity.BOTTOM,
+        );
+      }catch(err){
+        print('error in taking screenShot: $err');
+      }
   }
   @override
   Widget build(BuildContext context){
@@ -58,8 +88,7 @@ class _Home extends State<Home>{
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   RepaintBoundary(
-                  key: globalKey,
-
+                    key: _globalKey,
                   child: Stack(
                   children: [
                     Container(
@@ -161,12 +190,12 @@ class _Home extends State<Home>{
                                   ),
                                   Container(
                                     height: 30,
-                                  child: Slider(
+                                  child: Slider( //slider is here
                                     value: _headSize,
                                     min: 15,
-                                    max: 45,
+                                    max: 55,
                                     label: _headSize.round().toString(),
-                                    divisions: 20,
+                                    divisions: 40,
                                     thumbColor: Colors.red,
                                     activeColor: Colors.red,
                                     inactiveColor: Colors.red.shade100,
@@ -181,7 +210,7 @@ class _Home extends State<Home>{
                         ),
                         Container(
                           height: 50,
-                        padding: EdgeInsets.only(left: 10, right: 10),
+                          padding: EdgeInsets.only(left: 10, right: 10),
                           child: TextField(
                           controller: _headerCont,
                           style: TextStyle(
@@ -281,18 +310,7 @@ class _Home extends State<Home>{
                           }
                         ),
                         SizedBox(width: 20),
-                        ElevatedButton(
-                          child: Icon(Icons.share, size: 25, color: Colors.blue),
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)
-                                )
-                            ),
-                          onPressed: (){
-
-                          }
-                        )
+                        
                       ]
                     )
                   ),
