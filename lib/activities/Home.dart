@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,6 +21,8 @@ class Home extends StatefulWidget{
 class _Home extends State<Home>{
   File? _imagePick;
   final picker = ImagePicker();
+  Color _fontCol = Colors.white;
+  Color _selectColor = Colors.white;
   String header = '';
   String footer = '';
   var _headSize = 16.0;
@@ -68,6 +71,45 @@ class _Home extends State<Home>{
       }catch(err){
         print('error in taking screenShot: $err');
       }
+  }
+  _colorPick(){
+    return ColorPicker(
+        pickerColor: _selectColor,
+        onColorChanged: (col){
+          setState((){
+            _selectColor = col;
+          });
+        }
+    );
+  }
+  // font color
+  _fontColor(){
+    return showDialog(
+      context: context,
+      builder: (context){
+        return AlertDialog(
+          title: Text('Pick a font Color!'),
+          content: _colorPick(),
+          actions: [
+            TextButton(
+              child: Text('Select', style: TextStyle(fontSize: 22, color: Colors.blue)),
+              onPressed: (){
+                setState((){
+                  _fontCol = _selectColor;
+                });
+                Navigator.of(context).pop();
+              }
+            ),
+            TextButton(
+              child: Text('Cancel', style: TextStyle(fontSize: 22, color: Colors.red)),
+              onPressed: (){
+                Navigator.of(context).pop();
+              }
+            )
+          ]
+        );
+      }
+    );
   }
   @override
   Widget build(BuildContext context){
@@ -130,7 +172,7 @@ class _Home extends State<Home>{
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 fontSize: _headSize,
-                                color: Colors.white,
+                                color: _fontCol,
                                 fontWeight: FontWeight.bold
                             ))
                   ),
@@ -145,7 +187,7 @@ class _Home extends State<Home>{
                           textAlign: TextAlign.center,
                           style: TextStyle(
                           fontSize: _headSize,
-                          color: Colors.white,
+                          color: _fontCol,
                               fontWeight: FontWeight.bold
 
                         )))
@@ -154,7 +196,11 @@ class _Home extends State<Home>{
                   Container(
                     child: Column(
                       children: [
-                        ElevatedButton(
+                        Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                            ElevatedButton(
                             child:const Text('Pick an Image', style: TextStyle(
                                 fontSize: 22, color: Colors.white
                             )),
@@ -167,7 +213,21 @@ class _Home extends State<Home>{
                             onPressed: (){
                               imagePic();
                             }
-                        ),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              )
+                            ),
+                            child: Icon(Icons.water_drop, size: 22, color: Colors.blue),
+                            onPressed: (){
+                              _fontColor();
+                            }
+                          )
+                        ],
+                          )),
                         Container(
                             margin: EdgeInsets.only(bottom: 5),
                             padding: EdgeInsets.only(top: 3, bottom: 3),
@@ -310,7 +370,7 @@ class _Home extends State<Home>{
                           }
                         ),
                         SizedBox(width: 20),
-                        
+
                       ]
                     )
                   ),
