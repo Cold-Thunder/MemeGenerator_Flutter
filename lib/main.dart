@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meme_generator/activities/Home.dart';
+
+import 'package:meme_generator/activities/SplashScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: Home(),
+      home:Splashscreen(),
     );
   }
 }
